@@ -14,7 +14,7 @@ from typing import Any
 from .engine import locate_tool, read_json, write_json
 
 
-DEFAULT_MODEL = "claude-fable-5"
+DEFAULT_MODEL = "gpt-5.6"
 DEFAULT_FALLBACK = "claude-opus-4-8"
 
 
@@ -65,6 +65,43 @@ def _anthropic(prompt: str, model: str, fallback: str | None, max_tokens: int) -
     return {"provider": "anthropic", "requested_model": model, "used_model": used, "plan": _json_from_text(text)}
 
 
+def _openai(prompt: str, model: str, max_tokens: int) -> dict[str, Any]:
+    key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY is required for --provider openai; use --provider deterministic for local-only planning")
+    payload = json.dumps({
+        "model": model,
+        "instructions": "You are the reasoning runtime for Viral Stitch's proprietary editorial model. Return valid JSON only. Never invent media paths or alter canonical audio timing.",
+        "input": prompt,
+        "max_output_tokens": max_tokens,
+        "reasoning": {"effort": "high"},
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/responses",
+        data=payload,
+        method="POST",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=300) as response:
+            result = json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(f"OpenAI HTTP {exc.code}: {exc.read().decode(errors='replace')}") from exc
+    if result.get("status") != "completed":
+        details = result.get("incomplete_details") or result.get("error") or "unknown reason"
+        raise RuntimeError(f"OpenAI response did not complete: {details}. Increase --max-tokens or reduce catalog size.")
+    texts = []
+    for item in result.get("output", []):
+        for block in item.get("content", []):
+            if block.get("type") == "output_text":
+                texts.append(block.get("text", ""))
+    if not texts and result.get("output_text"):
+        texts.append(result["output_text"])
+    if not texts:
+        raise RuntimeError(f"OpenAI returned no output text (status={result.get('status')})")
+    return {"provider": "openai", "requested_model": model, "used_model": result.get("model", model), "response_id": result.get("id"), "plan": _json_from_text("\n".join(texts))}
+
+
 def _deterministic_plan(catalog: dict[str, Any], brief: str) -> dict[str, Any]:
     words = set(re.findall(r"[a-z0-9]+", brief.lower()))
     scored = []
@@ -91,7 +128,7 @@ def command_plan(args: argparse.Namespace) -> int:
     catalog = read_json(Path(args.catalog))
     analysis = read_json(Path(args.audio_analysis)) if args.audio_analysis else {}
     brief = Path(args.brief).read_text(encoding="utf-8") if Path(args.brief).exists() else args.brief
-    if args.provider == "anthropic":
+    if args.provider in {"openai", "anthropic"}:
         compact = [{k: row.get(k) for k in ("path", "name", "duration", "width", "height", "orientation")} for row in catalog.get("items", []) if row.get("valid")]
         prompt = (
             "You are the editorial brain for a deterministic music-video system. Return JSON only. "
@@ -100,7 +137,7 @@ def command_plan(args: argparse.Namespace) -> int:
             "prefer literal lyric matches; preserve the canonical audio.\n\nBRIEF:\n" + brief +
             "\n\nAUDIO ANALYSIS:\n" + json.dumps(analysis) + "\n\nCATALOG:\n" + json.dumps(compact)
         )
-        result = _anthropic(prompt, args.model, args.fallback_model, args.max_tokens)
+        result = _openai(prompt, args.model, args.max_tokens) if args.provider == "openai" else _anthropic(prompt, args.model, args.fallback_model, args.max_tokens)
     else:
         result = _deterministic_plan(catalog, brief)
     result["schema_version"] = 1
@@ -169,7 +206,7 @@ def command_patch(args: argparse.Namespace) -> int:
 
 
 def command_doctor(args: argparse.Namespace) -> int:
-    status = {"python": shutil.which("python") or shutil.which("py"), "ffmpeg": str(locate_tool("ffmpeg", args.ffmpeg)), "ffprobe": str(locate_tool("ffprobe", args.ffprobe)), "anthropic_key_configured": bool(os.environ.get("ANTHROPIC_API_KEY")), "default_anthropic_model": DEFAULT_MODEL}
+    status = {"python": shutil.which("python") or shutil.which("py"), "ffmpeg": str(locate_tool("ffmpeg", args.ffmpeg)), "ffprobe": str(locate_tool("ffprobe", args.ffprobe)), "openai_key_configured": bool(os.environ.get("OPENAI_API_KEY")), "anthropic_key_configured": bool(os.environ.get("ANTHROPIC_API_KEY")), "default_reasoning_model": DEFAULT_MODEL, "proprietary_editorial_layer": "viral-stitch-godmode"}
     print(json.dumps(status, indent=2))
     return 0
 
@@ -178,7 +215,7 @@ def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(prog="viral-stitch")
     subs = root.add_subparsers(dest="command", required=True)
     doctor = subs.add_parser("doctor"); doctor.add_argument("--ffmpeg"); doctor.add_argument("--ffprobe"); doctor.set_defaults(func=command_doctor)
-    plan = subs.add_parser("plan"); plan.add_argument("--catalog", required=True); plan.add_argument("--audio-analysis"); plan.add_argument("--brief", required=True); plan.add_argument("--output", required=True); plan.add_argument("--provider", choices=("deterministic", "anthropic"), default="deterministic"); plan.add_argument("--model", default=DEFAULT_MODEL); plan.add_argument("--fallback-model", default=DEFAULT_FALLBACK); plan.add_argument("--max-tokens", type=int, default=8192); plan.set_defaults(func=command_plan)
+    plan = subs.add_parser("plan"); plan.add_argument("--catalog", required=True); plan.add_argument("--audio-analysis"); plan.add_argument("--brief", required=True); plan.add_argument("--output", required=True); plan.add_argument("--provider", choices=("openai", "deterministic", "anthropic"), default="openai"); plan.add_argument("--model", default=DEFAULT_MODEL); plan.add_argument("--fallback-model", default=DEFAULT_FALLBACK); plan.add_argument("--max-tokens", type=int, default=8192); plan.set_defaults(func=command_plan)
     audit = subs.add_parser("audit-manifest"); audit.add_argument("--manifest", required=True); audit.add_argument("--output", required=True); audit.set_defaults(func=command_audit)
     patch = subs.add_parser("patch-visuals"); patch.add_argument("--master", required=True); patch.add_argument("--start", type=float, required=True); patch.add_argument("--end", type=float, required=True); patch.add_argument("--replacement", required=True); patch.add_argument("--replacement-start", type=float, default=0); patch.add_argument("--output", required=True); patch.add_argument("--transition", type=float, default=.2); patch.add_argument("--width", type=int, default=1920); patch.add_argument("--height", type=int, default=1080); patch.add_argument("--fps", type=int, default=30); patch.add_argument("--crf", type=int, default=19); patch.add_argument("--preset", default="veryfast"); patch.add_argument("--ffmpeg"); patch.add_argument("--ffprobe"); patch.set_defaults(func=command_patch)
     return root
@@ -187,4 +224,3 @@ def parser() -> argparse.ArgumentParser:
 def extension_main(argv: list[str]) -> int:
     args = parser().parse_args(argv)
     return int(args.func(args))
-

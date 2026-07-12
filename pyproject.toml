@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "viral-stitch-godmode"
-version = "1.0.0"
-description = "Deterministic beat-synced video editing with optional Claude Fable 5 editorial planning"
+version = "1.1.0"
+description = "Viral Stitch's proprietary editorial system running on GPT-5.6 with deterministic beat-synced rendering"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -24,4 +24,3 @@ packages = ["src/viral_stitch"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-

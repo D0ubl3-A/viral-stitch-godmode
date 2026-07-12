@@ -1,0 +1,7 @@
+{
+  "valid_count": 2,
+  "items": [
+    {"path": "D:/media/squad.mp4", "name": "squad.mp4", "duration": 8.0, "width": 1920, "height": 1080, "orientation": "landscape", "valid": true},
+    {"path": "D:/media/holy-wall.mp4", "name": "holy-wall.mp4", "duration": 6.0, "width": 1080, "height": 1920, "orientation": "portrait", "valid": true}
+  ]
+}

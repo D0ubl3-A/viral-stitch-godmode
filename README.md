@@ -1,13 +1,13 @@
 # Viral Stitch Godmode
 
-Production-grade, beat-synced music-video assembly with deterministic FFmpeg rendering, proof-first QC, semantic manifest audits, visual-only patching, and optional Claude Fable 5 editorial planning.
+Production-grade, beat-synced music-video assembly powered by Viral Stitch's proprietary editorial layer on GPT-5.6, deterministic FFmpeg rendering, proof-first QC, semantic audits, and visual-only patching.
 
 ## Why it is different
 
 - The AI never renders media or silently changes timing. It proposes an editorial plan; deterministic validators and FFmpeg execute it.
 - `patch-visuals` replaces picture ranges while stream-copying the canonical AAC audio unchanged.
 - Beat-aligned microcuts, content-hashed caches, forbidden-source enforcement, loudness measurement, contact sheets, boundary sheets, ending checks, black/freeze scans, and stream-duration gates are built in.
-- Anthropic is optional. The full inventory, audio analysis, renderer, QC, audits, and deterministic planner work locally.
+- GPT-5.6 supplies frontier reasoning, but Viral Stitch owns the editorial policy, schemas, training examples, timing logic, validators, renderer, and QC. The deterministic fallback works fully offline.
 
 ## Install
 
@@ -18,16 +18,16 @@ viral-stitch doctor
 
 FFmpeg and FFprobe must be on `PATH`, supplied by CLI flags, or installed at the default Windows location used by the engine.
 
-## Claude Fable 5 planning
+## Viral Stitch model on GPT-5.6
 
 ```powershell
-$env:ANTHROPIC_API_KEY = "your-key"
-viral-stitch plan --provider anthropic --model claude-fable-5 `
+$env:OPENAI_API_KEY = "your-key"
+viral-stitch plan --provider openai --model gpt-5.6 `
   --catalog catalog.json --audio-analysis audio-analysis.json `
   --brief creative-brief.md --output editorial-plan.json
 ```
 
-If Fable 5 returns a classifier refusal, the client retries with `claude-opus-4-8` by default. API calls are never required to render or QC.
+Use `--provider deterministic` for offline planning. Anthropic remains an optional compatibility connector, not the product's brain.
 
 ## Proven deterministic workflow
 
@@ -53,5 +53,4 @@ The replacement is extended by the transition handles, dissolved at both boundar
 
 ## Security
 
-API keys are read only from environment variables. Media, prompts, manifests, and credentials are excluded from Git by default. Fable 5 requests send the supplied brief, compact catalog metadata, and audio-analysis JSON—not the media files themselves.
-
+API keys are read only from environment variables. Media, prompts, manifests, and credentials are excluded from Git by default. GPT-5.6 receives the supplied brief, compact catalog metadata, and audio-analysis JSON—not the media files themselves.
