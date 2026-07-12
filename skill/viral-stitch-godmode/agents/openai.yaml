@@ -1,0 +1,4 @@
+interface:
+  display_name: "Viral Stitch Godmode"
+  short_description: "GPT-5.6 beat-synced video editing"
+  default_prompt: "Use $viral-stitch-godmode to build or repair a beat-synced music video with protected audio and proof-first QC."

@@ -16,6 +16,12 @@ py -m pip install -e .
 viral-stitch doctor
 ```
 
+## Install as a Codex skill
+
+Download `viral-stitch-godmode-skill-1.2.0.zip` from the GitHub release, extract its `viral-stitch-godmode` folder into `~/.codex/skills`, and start a new Codex task. Invoke it with `$viral-stitch-godmode`.
+
+The skill is a thin, validated workflow layer over this package. Both delivery modes use the same engine, GPT-5.6 runtime, validators, renderer, and QC contract.
+
 FFmpeg and FFprobe must be on `PATH`, supplied by CLI flags, or installed at the default Windows location used by the engine.
 
 ## Viral Stitch model on GPT-5.6
