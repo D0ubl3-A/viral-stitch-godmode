@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "viral-stitch-godmode"
+version = "1.0.0"
+description = "Deterministic beat-synced video editing with optional Claude Fable 5 editorial planning"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "ILLCO"}]
+dependencies = ["numpy>=1.26"]
+
+[project.scripts]
+viral-stitch = "viral_stitch.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "build>=1.2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/viral_stitch"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
