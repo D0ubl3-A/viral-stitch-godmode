@@ -6,7 +6,7 @@ from . import engine
 from .godmode import extension_main
 
 
-EXTENSIONS = {"doctor", "plan", "audit-manifest", "patch-visuals"}
+EXTENSIONS = {"doctor", "plan", "swarm-plan", "audit-manifest", "patch-visuals"}
 
 
 def main() -> int:
@@ -17,4 +17,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

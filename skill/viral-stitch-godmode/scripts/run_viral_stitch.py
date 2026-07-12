@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 
-INSTALL_URL = "https://github.com/D0ubl3-A/viral-stitch-godmode/releases/download/v1.2.0/viral_stitch_godmode-1.2.0-py3-none-any.whl"
+INSTALL_URL = "https://github.com/D0ubl3-A/viral-stitch-godmode/releases/download/v1.3.0/viral_stitch_godmode-1.3.0-py3-none-any.whl"
 
 
 def main() -> int:

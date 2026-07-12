@@ -2,6 +2,19 @@
 
 Production-grade, beat-synced music-video assembly powered by Viral Stitch's proprietary editorial layer on GPT-5.6, deterministic FFmpeg rendering, proof-first QC, semantic audits, and visual-only patching.
 
+Version 1.3.0 adds universal catalog intelligence and bounded 100-agent consensus. The original v1.2.0 release remains permanently available with its original behavior.
+
+## Any video catalog + 100-agent consensus
+
+Mine mixed folders of generator exports, camera footage, archives, and downloads—not only Sora. Supported containers include MP4, MOV, M4V, WebM, MKV, AVI, MTS, M2TS, TS, MPG, MPEG, WMV, FLV, OGV, 3GP, and VOB. Inventory reports now expose sampled fingerprints, duplicate groups, format and orientation counts, duration, and bytes.
+
+```powershell
+viral-stitch inventory --roots "D:\videos" "D:\camera" "D:\downloads" --output catalog.json
+viral-stitch swarm-plan --catalog catalog.json --brief "literal lyric matches, cinematic landscape, no dogs" --agents 100 --output swarm-plan.json
+```
+
+The swarm is 100 reproducible local editorial voters spanning relevance, literal lyrics, beat energy, quality, diversity, format fit, duration, uniqueness, continuity, and risk. Add `--synthesize openai --model gpt-5.6` for one final model synthesis after consensus.
+
 ## Why it is different
 
 - The AI never renders media or silently changes timing. It proposes an editorial plan; deterministic validators and FFmpeg execute it.
@@ -18,7 +31,7 @@ viral-stitch doctor
 
 ## Install as a Codex skill
 
-Download `viral-stitch-godmode-skill-1.2.0.zip` from the GitHub release, extract its `viral-stitch-godmode` folder into `~/.codex/skills`, and start a new Codex task. Invoke it with `$viral-stitch-godmode`.
+Download `viral-stitch-godmode-skill-1.3.0.zip` from the GitHub release, extract its `viral-stitch-godmode` folder into `~/.codex/skills`, and start a new Codex task. Invoke it with `$viral-stitch-godmode`.
 
 The skill is a thin, validated workflow layer over this package. Both delivery modes use the same engine, GPT-5.6 runtime, validators, renderer, and QC contract.
 

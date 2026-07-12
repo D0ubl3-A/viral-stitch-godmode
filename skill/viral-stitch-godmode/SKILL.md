@@ -1,6 +1,6 @@
 ---
 name: viral-stitch-godmode
-description: Build, repair, plan, render, and QC beat-synced music videos with Viral Stitch's GPT-5.6 editorial system and deterministic FFmpeg engine. Use for music-video assembly, Sora/Veo catalog mining, lyric or beat synchronization, visual-only replacements that preserve audio, forbidden-scene removal, proof renders, final MP4 delivery, or semantic manifest audits.
+description: Build, repair, plan, render, and QC beat-synced music videos with Viral Stitch's GPT-5.6 editorial system and deterministic FFmpeg engine. Use for music-video assembly, universal video catalog mining, lyric or beat synchronization, visual-only replacements that preserve audio, forbidden-scene removal, proof renders, final MP4 delivery, or semantic manifest audits.
 ---
 
 # Viral Stitch Godmode
@@ -28,6 +28,10 @@ Use the packaged engine through `scripts/run_viral_stitch.py`. Keep GPT-5.6 as t
 - Protect literal lyric actions with word timestamps and unmistakable visual framing.
 - Reject repeated source windows, irrelevant filler, accidental text, dog/agent/bazooka-style exclusions, and portrait footage with untreated sidebars.
 - Keep AI output advisory. Validators, timing math, rendering, and QC decide what ships.
+- Preserve the original/classic workflow. Universal catalog and swarm planning are additive.
+
+## Universal catalog swarm
+
+Run `inventory` against any mix of generator exports, cameras, downloads, or archives. Then run `swarm-plan --catalog catalog.json --brief "..." --agents 100 --output swarm-plan.json`. The swarm uses 100 bounded local editorial voters and may optionally perform one GPT-5.6 synthesis with `--synthesize openai`.
 
 Read [references/workflow.md](references/workflow.md) for command templates and installation recovery.
-

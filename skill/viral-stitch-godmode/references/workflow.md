@@ -4,7 +4,8 @@ Run commands through the skill wrapper:
 
 ```powershell
 py scripts/run_viral_stitch.py doctor
-py scripts/run_viral_stitch.py inventory --roots "D:\Downloads" "D:\sora" --output catalog.json --exclude dog --exclude bazooka
+py scripts/run_viral_stitch.py inventory --roots "D:\Downloads" "D:\camera" "D:\generator-exports" --output catalog.json --exclude dog --exclude bazooka
+py scripts/run_viral_stitch.py swarm-plan --catalog catalog.json --brief brief.md --agents 100 --output swarm-plan.json
 py scripts/run_viral_stitch.py analyze-audio --audio song.mp3 --output audio-analysis.json
 py scripts/run_viral_stitch.py plan --provider openai --model gpt-5.6 --catalog catalog.json --audio-analysis audio-analysis.json --brief brief.md --output editorial-plan.json
 py scripts/run_viral_stitch.py audit-manifest --manifest project.json --output audit.json
@@ -20,4 +21,3 @@ py scripts/run_viral_stitch.py patch-visuals --master approved.mp4 --start 25 --
 ```
 
 If the wrapper reports a missing package, install the release URL it prints. `OPENAI_API_KEY` enables GPT-5.6 planning. All other commands work locally without an API key.
-

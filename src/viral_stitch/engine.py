@@ -14,7 +14,10 @@ from pathlib import Path
 from typing import Any
 
 
-VIDEO_EXTENSIONS = {".mp4", ".mov", ".m4v", ".webm", ".mkv"}
+VIDEO_EXTENSIONS = {
+    ".3gp", ".avi", ".flv", ".m2ts", ".m4v", ".mkv", ".mov", ".mp4",
+    ".mpeg", ".mpg", ".mts", ".ogv", ".ts", ".vob", ".webm", ".wmv",
+}
 DEFAULT_FFMPEG = Path(r"D:\Downloads\ffmpeg\ffmpeg-8.1-essentials_build\bin\ffmpeg.exe")
 DEFAULT_FFPROBE = Path(r"D:\Downloads\ffmpeg\ffmpeg-8.1-essentials_build\bin\ffprobe.exe")
 NULL_SINK = "NUL" if os.name == "nt" else "/dev/null"
@@ -61,6 +64,19 @@ def resolved(value: str, base: Path) -> Path:
 def slug(text: str) -> str:
     clean = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return clean[:48] or "checkpoint"
+
+
+def quick_fingerprint(path: Path, sample_size: int = 1_048_576) -> str:
+    """Identify duplicate media without reading multi-gigabyte files in full."""
+    size = path.stat().st_size
+    digest = hashlib.sha256()
+    digest.update(str(size).encode("ascii"))
+    with path.open("rb") as stream:
+        digest.update(stream.read(sample_size))
+        if size > sample_size:
+            stream.seek(max(0, size - sample_size))
+            digest.update(stream.read(sample_size))
+    return digest.hexdigest()
 
 
 def probe(path: Path, ffprobe: Path) -> dict[str, Any]:
@@ -209,17 +225,36 @@ def command_inventory(args: argparse.Namespace) -> int:
                     "orientation": orientation,
                     "codec": video.get("codec_name") if video else None,
                     "fps": parse_rate(video.get("avg_frame_rate") if video else None),
+                    "fingerprint": quick_fingerprint(path),
                     "excluded": blocked,
                     "valid": valid and blocked is None,
                 })
             except Exception as exc:  # Keep inventory useful when one source is corrupt.
                 records.append({"path": str(path), "valid": False, "error": str(exc), "excluded": blocked})
     records.sort(key=lambda item: (not item.get("valid", False), item.get("path", "")))
+    fingerprints: dict[str, list[str]] = {}
+    for row in records:
+        if row.get("valid") and row.get("fingerprint"):
+            fingerprints.setdefault(row["fingerprint"], []).append(row["path"])
+    format_counts: dict[str, int] = {}
+    orientation_counts: dict[str, int] = {}
+    for row in records:
+        if not row.get("valid"):
+            continue
+        extension = Path(row["path"]).suffix.lower()
+        format_counts[extension] = format_counts.get(extension, 0) + 1
+        orientation = row.get("orientation", "unknown")
+        orientation_counts[orientation] = orientation_counts.get(orientation, 0) + 1
     payload = {
         "created": datetime.now().isoformat(),
         "roots": [str(Path(root).resolve()) for root in args.roots],
         "valid_count": sum(1 for row in records if row.get("valid")),
         "excluded_count": sum(1 for row in records if row.get("excluded")),
+        "total_duration": round(sum(float(row.get("duration", 0)) for row in records if row.get("valid")), 3),
+        "total_bytes": sum(int(row.get("size", 0)) for row in records if row.get("valid")),
+        "format_counts": dict(sorted(format_counts.items())),
+        "orientation_counts": dict(sorted(orientation_counts.items())),
+        "duplicate_groups": [paths for paths in fingerprints.values() if len(paths) > 1],
         "items": records,
     }
     write_json(Path(args.output).resolve(), payload)
