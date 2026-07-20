@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 
 from . import engine
+from .debate import main as debate_main
 from .godmode import extension_main
 
 
@@ -10,6 +11,8 @@ EXTENSIONS = {"doctor", "plan", "swarm-plan", "audit-manifest", "patch-visuals"}
 
 
 def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] == "debate":
+        return debate_main(sys.argv[2:])
     if len(sys.argv) > 1 and sys.argv[1] in EXTENSIONS:
         return extension_main(sys.argv[1:])
     return engine.main()
